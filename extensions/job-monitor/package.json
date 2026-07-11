@@ -1,0 +1,11 @@
+{
+  "name": "pi-job-monitor-extension",
+  "private": true,
+  "keywords": ["pi-package", "pi-extension"],
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

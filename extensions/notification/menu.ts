@@ -6,7 +6,7 @@ import { Container, Text, matchesKey } from "@earendil-works/pi-tui";
 export type MenuItem =
   | { type: "action"; id: string; label: string }
   | { type: "submenu"; id: string; label: string; children: () => MenuItem[] }
-  | { type: "input"; id: string; label: string; prompt: string; placeholder?: string; currentValue?: string; isSecret?: boolean };
+  | { type: "input"; id: string; label: string; prompt: string; placeholder?: string; currentValue?: string; isSecret?: boolean; clearOnEdit?: boolean };
 
 export type MenuTreeFactory = () => MenuItem[];
 export type MenuActionCallback = (id: string, value?: string) => Promise<void>;
@@ -233,7 +233,7 @@ export async function openMenu(
 
           if (item.type === "input") {
             mode = "input";
-            inputBuffer = item.currentValue && !item.isSecret ? item.currentValue : "";
+            inputBuffer = item.clearOnEdit ? "" : (item.currentValue && !item.isSecret ? item.currentValue : "");
             inputItem = item;
             refresh();
             return;

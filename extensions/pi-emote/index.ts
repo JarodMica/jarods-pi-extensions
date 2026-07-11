@@ -16,12 +16,13 @@ import { KittyRenderer } from "./src/render_kitty.js";
 import { TmuxKittyRenderer } from "./src/render_tmux_kitty.js";
 import { TmuxKittyUnicodeRenderer } from "./src/render_tmux_kitty_unicode.js";
 import { ITermRenderer } from "./src/render_iterm.js";
+import { WezTermITermRenderer } from "./src/render_wezterm_iterm.js";
 import { TmuxITermRenderer } from "./src/render_tmux_iterm.js";
 import { SixelRenderer } from "./src/render_sixel.js";
 import { AsciiRenderer } from "./src/render_ascii.js";
 import { Animator } from "./src/animator.js";
 import { createWidgetFactory } from "./src/widget.js";
-import { resolveRenderer } from "./src/terminal.js";
+import { detectTerminalName, resolveRenderer } from "./src/terminal.js";
 
 const IMAGE_STATES = ["hi", "idle", "think", "talk", "read", "write", "tool", "success", "failure", "compact"];
 
@@ -138,6 +139,16 @@ function createRendererFromResolved(resolved: ResolvedRenderer, imageSize: numbe
     if (multiplexer === "tmux") {
       log(`createRenderer: using TmuxITermRenderer (${imageSize} cols)`);
       return new TmuxITermRenderer(imageSize);
+    }
+    // WezTerm (esp. Windows under conpty) needs absolute-column image placement:
+    // conpty miscounts the cursor column after an image OSC, so the standard
+    // relative-cursor iTerm2 layout drifts the avatar to the far-right and
+    // stacks duplicates. WezTermITermRenderer emits plain iTerm2 and flags the
+    // widget to use the conpty-safe absolute-column layout. (Kitty is stripped
+    // by conpty; `doNotMoveCursor=1` corrupts the render — both ruled out.)
+    if (detectTerminalName() === "wezterm") {
+      log(`createRenderer: using WezTermITermRenderer (${imageSize} cols)`);
+      return new WezTermITermRenderer(imageSize);
     }
     log(`createRenderer: using ITermRenderer (${imageSize} cols)`);
     return new ITermRenderer(imageSize);
@@ -452,7 +463,7 @@ export default function (pi: ExtensionAPI) {
       const imgSize = resolveImageSize(config);
       const alwaysShow = config.alwaysShow ?? false;
       ctx.ui.notify(
-        `[pi-emote]\nEmote set: ${currentEmoteSet}\nImage size: ${imgSize} cols\nGrid size: ${config.size}\nAlways show: ${alwaysShow ? "on" : "off"}\nAvailable sets: ${sets.join(", ")}`,
+        `[pi-emote]\nEmote set: ${currentEmoteSet}\nRenderer: ${lastResolved.protocol}${lastResolved.multiplexer ? ` via ${lastResolved.multiplexer}` : ""}\nDetected terminal: ${detectTerminalName()}\nImage size: ${imgSize} cols\nGrid size: ${config.size}\nAlways show: ${alwaysShow ? "on" : "off"}\nAvailable sets: ${sets.join(", ")}`,
         "info",
       );
       return;
@@ -482,7 +493,7 @@ export default function (pi: ExtensionAPI) {
       if (subcommand === "list") {
         const imgSize = resolveImageSize(config);
         ctx.ui.notify(
-          `[pi-emote] Emote set: ${currentEmoteSet}  ·  imageSize: ${imgSize}  ·  size: ${config.size}\nAvailable emote sets: ${sets.join(", ")}`,
+          `[pi-emote] Emote set: ${currentEmoteSet}  ·  renderer: ${lastResolved.protocol}${lastResolved.multiplexer ? ` via ${lastResolved.multiplexer}` : ""}  ·  terminal: ${detectTerminalName()}  ·  imageSize: ${imgSize}  ·  size: ${config.size}\nAvailable emote sets: ${sets.join(", ")}`,
           "info",
         );
         return;

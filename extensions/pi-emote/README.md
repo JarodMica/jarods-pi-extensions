@@ -218,7 +218,8 @@ You can force a specific renderer for any terminal in your user or project confi
   "terminals": [
     { "match": "vscode", "render": "ascii" },
     { "match": "windows-terminal", "render": "sixel" },
-    { "match": "ghostty", "render": "kitty" }
+    { "match": "ghostty", "render": "kitty" },
+    { "match": "wezterm", "render": "iterm2" }
   ]
 }
 ```
@@ -260,13 +261,13 @@ Without `allow-passthrough`, pi-emote defaults to ASCII and shows a one-time war
 | Ghostty | kitty-unicode | ✅ Stable, pane-safe, auto-detected |
 | kitty | kitty-unicode | ⚠️ Untested, pane-safe, auto-detected |
 | iTerm2 | iterm2 | ⚠️ Experimental, opt-in only (pane bleed in multi-pane layouts) |
-| WezTerm | iterm2 | ⚠️ Experimental, opt-in only (not verified) |
+| WezTerm | iterm2 | ⚠️ Experimental; uses WezTerm's plain iTerm2 inline-image protocol |
 
 The outer terminal is detected via `tmux show-environment TERM_PROGRAM`, which reflects the currently attached terminal.
 
 Ghostty and kitty use the **kitty-unicode** renderer (Unicode placeholders) which is pane-safe — images stay within their pane and clean up on session switch. This is the default when auto-detected.
 
-iTerm2 and WezTerm use DCS passthrough for the iTerm2 image protocol. This works but has known limitations: images can bleed into adjacent panes and persist when switching sessions. **Not enabled by default** — opt in explicitly:
+iTerm2 uses DCS passthrough for the iTerm2 image protocol. This works but has known limitations: images can bleed into adjacent panes and persist when switching sessions. On Windows, WezTerm renders the plain iTerm2 inline-image protocol (its own `imgcat` path) correctly at the cursor, so pi-emote uses the standard iTerm2 renderer there rather than raw Kitty graphics. Note: WezTerm's `doNotMoveCursor=1` extension corrupts the image render and must not be used. If you force image rendering through tmux, treat it as experimental. **Not enabled by default** — opt in explicitly:
 
 ```json
 {

@@ -123,6 +123,45 @@ function renderITermFrame(frame: RenderedFrame & { kind: "image" }, width: numbe
   return lines;
 }
 
+/**
+ * WezTerm (incl. Windows/conpty) iTerm2 layout — absolute-column placement.
+ *
+ * Conpty miscounts the cursor column after an image OSC, so the standard
+ * relative-cursor iTerm2 layout drifts the avatar to the far-right and stacks
+ * duplicates. Here every position is set with absolute column addressing
+ * (`\x1b[<n>G`), which conpty tracks reliably, and the image is wrapped in
+ * DECSC/DECRC (`\x1b7`/`\x1b8`) so the cursor returns to a known cell regardless
+ * of how WezTerm advances it past the image.
+ *
+ * Layout per row (1-based columns): col 1 = left margin, cols 2..gridSize+1 =
+ * avatar, col gridSize+3 = separator, info after. The image is emitted on the
+ * LAST row via cursor-up so it is drawn after pi-tui's per-line `\x1b[2K`
+ * clears — that clear + same-position redraw is what prevents accumulation.
+ */
+function renderWezTermFrame(frame: RenderedFrame & { kind: "image" }, width: number, gridSize: number, infoLines: string[], borderColor: (s: string) => string): string[] {
+  const sep = borderColor("│");
+  const sepCol = gridSize + 3; // 1-based column of the separator
+  const imgCol = 2;            // 1-based column of the avatar (after 1-col left margin)
+  const lines: string[] = [];
+
+  for (let i = 0; i < frame.rows; i++) {
+    const info = infoLines[i] ?? "";
+    if (i < frame.rows - 1) {
+      lines.push(`\x1b[${sepCol}G${sep} ${info}`);
+    } else {
+      // Last row: place this row's separator/info, then cursor-up to the first
+      // image row, absolute column to the avatar, save cursor, draw the image,
+      // restore cursor, and drop back to the last row so pi-tui's row tracking
+      // stays aligned. Nothing is written after the image.
+      const up = frame.rows > 1 ? `\x1b[${frame.rows - 1}A` : "";
+      const down = frame.rows > 1 ? `\x1b[${frame.rows - 1}B` : "";
+      lines.push(`\x1b[${sepCol}G${sep} ${info}${up}\x1b[${imgCol}G\x1b7${frame.sequence}\x1b8${down}`);
+    }
+  }
+
+  return lines;
+}
+
 function renderTextFrame(frame: RenderedFrame & { kind: "text" }, width: number, config: Config, infoLines: string[], borderColor: (s: string) => string): string[] {
   const sep = borderColor("│");
   const leftMargin = " ";
@@ -206,7 +245,9 @@ export function createWidgetFactory(deps: WidgetDeps) {
         lines.push(border);
 
         if (frame.kind === "image") {
-          if (frame.cursorAdvances) {
+          if (frame.layout === "wezterm") {
+            lines.push(...renderWezTermFrame(frame, width, gridSize, infoLines, borderColor));
+          } else if (frame.cursorAdvances) {
             lines.push(...renderITermFrame(frame, width, gridSize, infoLines, borderColor));
           } else {
             lines.push(...renderKittyFrame(frame, width, gridSize, infoLines, borderColor));

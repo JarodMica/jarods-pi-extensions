@@ -55,6 +55,7 @@ export class KittyRenderer extends BaseImageRenderer {
       q: 2,
       C: 1,
       c: this.size,
+      r: rows,
       i: this.imageId,
     };
     if (yOffset > 0) {

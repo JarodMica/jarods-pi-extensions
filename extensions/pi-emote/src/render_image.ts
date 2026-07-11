@@ -61,6 +61,9 @@ export abstract class BaseImageRenderer implements Renderer {
   /** Padding mode for the widget: "spaces" (default) or "skip" (cursor-right). */
   protected padMode: "spaces" | "skip" = "spaces";
 
+  /** Widget layout override. "wezterm" uses absolute-column placement (conpty-safe). */
+  protected layout: "wezterm" | undefined = undefined;
+
   /** Encode base64 image data into a terminal escape sequence. */
   protected abstract encode(base64: string, dims: ImageDims, rows: number, yOffset: number): string | null;
 
@@ -88,7 +91,7 @@ export abstract class BaseImageRenderer implements Renderer {
     log(`${this.constructor.name}.show: sequence=${sequence !== null}, dims=${dims.widthPx}x${dims.heightPx}, rows=${rows}, yOffset=${yOffset}`);
 
     if (sequence) {
-      this.currentFrame = { kind: "image", sequence, rows, cursorAdvances: this.cursorAdvances, padMode: this.padMode };
+      this.currentFrame = { kind: "image", sequence, rows, cursorAdvances: this.cursorAdvances, padMode: this.padMode, layout: this.layout };
     } else {
       this.currentFrame = null;
     }

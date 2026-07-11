@@ -2,7 +2,7 @@
 
 A collection of extensions for the [pi coding agent](https://github.com/badlogic/pi-mono/).
 
-Includes a notification system (beep / TTS), voice input, an animated pixel-art emote widget, and an MCP server adapter — all installable in one step.
+Includes notifications (beep / TTS), voice input, an animated pixel-art emote widget, an MCP server adapter, and long-running job monitoring — all installable in one step.
 
 ## Prerequisites
 
@@ -38,6 +38,7 @@ pi remove .
 | **[pi-emote](extensions/pi-emote/)** | Animated pixel-art avatar that reacts to agent activity | [README](extensions/pi-emote/README.md) |
 | **[pi-mcp-adapter](extensions/pi-mcp-adapter/)** | Connect to MCP servers via a single ~200-token proxy tool | [README](extensions/pi-mcp-adapter/README.md) |
 | **[system-prompt](extensions/system-prompt/)** | Select append-only system prompt profiles, including trust-but-verify validation behavior | [README](extensions/system-prompt/README.md) |
+| **[job-monitor](extensions/job-monitor/)** | Launch and monitor long-running scripts without spending model tokens while waiting | [README](extensions/job-monitor/README.md) |
 
 ## Repository Structure
 
@@ -48,7 +49,8 @@ jarods-pi-extensions/
 │   ├── voice-input/      — Local voice input extension (bundled Voxtral worker or WebSocket ASR server)
 │   ├── pi-emote/         — Pixel-art emote widget (vendored from cgxeiji/pi-emote)
 │   ├── pi-mcp-adapter/   — MCP server adapter (vendored from nicobailon/pi-mcp-adapter)
-│   └── system-prompt/    — Append-only selectable system prompt profiles
+│   ├── system-prompt/    — Append-only selectable system prompt profiles
+│   └── job-monitor/      — Long-running process monitoring tool
 ├── skills/               — Skill directories (placeholder, add SKILL.md files)
 ├── prompts/              — Prompt templates (placeholder, add .md files)
 ├── docs/
@@ -85,3 +87,4 @@ After adding content, run `/reload` inside pi to pick up the changes.
 | `pi-mcp-adapter` | [nicobailon/pi-mcp-adapter](https://github.com/nicobailon/pi-mcp-adapter) |
 | `notification` | Local / custom |
 | `voice-input` | Local / custom |
+| `job-monitor` | Local / custom |

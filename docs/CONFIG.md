@@ -57,8 +57,12 @@ Under **TTS Output**:
 - **Output Style** — Choose `verbose` (read full output) or `shortened` (summarize before TTS)
 - **Select summarizer model** — Pick an LLM model from those available via `/model` (must have auth configured)
 - **Set skip threshold (sentences)** — Responses shorter than this many sentences are not summarized (default: 4)
+- **Set summarizer timeout (seconds)** — Increase or decrease the LLM summarizer request timeout (default: 90)
+- **Summary Style** — Choose `plain` or `Fish Audio tags` for shortened summaries
+- **Show Fish Audio tags prompt file path** — Display the Markdown file used for Fish Audio tag instructions
+- **Reset Fish Audio tags prompt file** — Restore the bundled Fish Audio tag instructions
 
-When `shortened` is active, the assistant response is sent to the configured summarizer model as a separate API call. The summarizer returns a 3-5 sentence spoken summary, shown below the final output as a dim custom message that is not sent to the LLM as chat context. If the summarizer call fails, an error is shown and TTS is skipped for that message.
+When `shortened` is active, the assistant response is sent to the configured summarizer model as a separate API call. The summarizer returns a concise spoken summary, shown below the final output as a dim custom message that is not sent to the LLM as chat context. If the response contains multiple distinct questions, choices, or tasks that may need an answer, the summarizer is prompted to preserve them as a short spoken sequence using natural labels such as "First," "Second," and "Third." The preview label changes from `TTS summary` to `TTS action items` when the generated summary appears to contain that spoken sequence. If `Fish Audio tags` summary style is enabled, that summary may include Fish Audio bracket cues such as `[calm]`, `[emphasis]`, `[break]`, and `[laughing]` for more natural TTS performance. If the summarizer call fails, an error is shown and TTS is skipped for that message.
 
 ## Startup Flag
 Override the notification mode at launch:
@@ -103,6 +107,10 @@ Settings are persisted to `~/.pi/agent/notification.json` (via `getAgentDir()`).
   - `provider`: The model provider (e.g. `anthropic`). Selected from models available via `/model`.
   - `modelId`: The model ID (e.g. `claude-sonnet-4-20250514`).
   - `skipThreshold`: Minimum sentence count before summarization is applied (default `4`).
+  - `timeoutSeconds`: LLM summarizer request timeout in seconds (default `90`).
+  - `disableThinking`: Whether summarizer requests should ask supported models to disable thinking/reasoning (default `true`).
+  - `summaryStyle`: Summary output style for shortened TTS summaries: `plain` or `fish-audio-tags` (default `plain`).
+  - Fish Audio tag instructions are loaded from `extensions/notification/fish-audio-tags-prompt.md` when `summaryStyle` is `fish-audio-tags`.
 
 ## Environment Variables
 API keys can be provided via environment variables to override stored settings:
@@ -137,3 +145,8 @@ When both the notification and pi-emote extensions are installed, the emote's mo
 | TTS output mode | `verbose` |
 | Summarizer model | not set |
 | Summarizer skip threshold | `4` sentences |
+| Summarizer timeout | `90` seconds |
+| Summarizer max output tokens | `1200` |
+| Summarizer thinking | disabled by default |
+| Summarizer style | `plain` |
+| Fish Audio tags prompt | `extensions/notification/fish-audio-tags-prompt.md` |

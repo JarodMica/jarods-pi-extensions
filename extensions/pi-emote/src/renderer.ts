@@ -10,7 +10,7 @@ import type { TUI } from "@earendil-works/pi-tui";
  *   The widget uses this to decide whether to add padding after the image sequence.
  */
 export type RenderedFrame =
-  | { kind: "image"; sequence: string; rows: number; cursorAdvances: boolean; padMode?: "spaces" | "skip" }
+  | { kind: "image"; sequence: string; rows: number; cursorAdvances: boolean; padMode?: "spaces" | "skip"; layout?: "wezterm" }
   | { kind: "text"; lines: string[] }
   | { kind: "placeholder"; lines: string[]; rows: number };
 
